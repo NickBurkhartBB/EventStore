@@ -96,6 +96,8 @@ namespace EventStore.Data.CLI
                 Console.WriteLine("you must specify text to scrub: --match");
                 Environment.Exit(1);
             }
+
+            Console.WriteLine("removing match {0} from chunk {1}", match, file);
             ChunkHeader header = ReadChunkHeader(file);
             var footer = ReadChunkFooter(file);
             ;
