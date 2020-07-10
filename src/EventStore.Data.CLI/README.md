@@ -1,0 +1,9 @@
+# EventStore.Data.CLI
+
+This project is a command line program to remove some data from a chunk. It looks for a string match and if it finds a match it will replace that log entry with an empty json object matching size of previous object. It doesn't try to resize chunks, so end result should be same size.
+
+It requires command arguments --input, --output, and --match. It's argument parse is naive you must enter arguments in format `--input value`. It also accepts an optional --print-json-field argument for printing a json field value in the original json text. This can be used if you need to capture an id field for tracking outside event store fields. For example if you want to remove email test@test.com events you can run `./data-cli.exe --input file --output diffFile --match test@test.com`. And you will end up with diffFile chunk with events that contain this email removed.
+
+## Building in Mono
+
+For building in Mono to use on server you can use Docker to compile your binary. This process is rough, but the gist of what needs to happen is you need a Docker container using ubuntu 14.04, with mono-complete=4.6.2 and build-essential installed. (Dockerfile forth coming). Then in the docker container with source code mounted you can run `xbuild src/EventStore.sln /p:Platform="Any CPU" /p:DefineConstants="USE_UNIX_IO MONO" /p:Configuration="Release"` at root source directory. This should compile all projects including Data.CLI project.  Then you can copy output .exe file from src/EventStore.Data.CLI/(outputpath) into bin/data-cli folder. Then copy all files from bin/clusternode into bin/data-cli. Then copy scripts/package-mono/package-cli.sh into bin/data-cli as well. Then run this script to build binary file data-cli in bin/data-cli. Copy this to wherever you need to run. This part is manual and can be improved.
