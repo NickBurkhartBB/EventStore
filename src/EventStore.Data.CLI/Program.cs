@@ -8,6 +8,7 @@ using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Common.Log;
+using System.Text.RegularExpressions;
 
 namespace EventStore.Data.CLI
 {
@@ -73,29 +74,25 @@ namespace EventStore.Data.CLI
         static void Main(string[] args)
         {
             LogManager.Init("data-cli", "", "");
-            string[] readArgs = args;
-            if (args.Length == 0) {
-                string readArgsInput = System.IO.File.ReadAllText("data-cli.args");
-                readArgs = readArgsInput.Split(new char[] { ' ' });
-            }
-            var file = ReadArg("--input", readArgs);
+            var file = ReadArg("--input", args);
             if (file == "")
             {
                 Console.WriteLine("you must specify input file: --input");
                 Environment.Exit(1);
             }
-            var newFile = ReadArg("--output", readArgs);
+            var newFile = ReadArg("--output", args);
             if (newFile == "")
             {
                 Console.WriteLine("you must specify output file: --output");
                 Environment.Exit(1);
             }
-            var match = ReadArg("--match", readArgs);
+            var match = ReadArg("--match", args);
             if (match == "")
             {
                 Console.WriteLine("you must specify text to scrub: --match");
                 Environment.Exit(1);
             }
+            var printJsonField = ReadArg("--print-json-field", args);
 
             Console.WriteLine("removing match {0} from chunk {1}", match, file);
             ChunkHeader header = ReadChunkHeader(file);
@@ -133,6 +130,13 @@ namespace EventStore.Data.CLI
                             if (dataStr.Contains(match))
                             {
                                 Console.WriteLine("scrubbing event {0} {1}", prepare.EventType, prepare.EventId);
+                                if (printJsonField != "") {
+                                    var oldRecordText = Encoding.UTF8.GetString(prepare.Data);
+                                    string pattern = String.Format("\"{0}\": ?(\"[^\"]+\"|[0-9.]+)", printJsonField);
+		                            foreach (Match patternMatch in Regex.Matches(oldRecordText, pattern, RegexOptions.IgnoreCase)) {
+                                        Console.WriteLine(patternMatch.Value);
+                                    }
+                                }
                                 var newRecord = LogRecord.Prepare(prepare.LogPosition, prepare.CorrelationId, prepare.EventId, prepare.TransactionPosition, prepare.TransactionOffset,
                                     prepare.EventStreamId, prepare.ExpectedVersion, prepare.Flags, prepare.EventType, EmptyJson(prepare.Data.Length), EmptyJson(prepare.Metadata.Length), prepare.TimeStamp);
                                 newChunk.TryAppend(newRecord);
