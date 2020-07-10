@@ -7,10 +7,11 @@ using EventStore.Core.Data;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.LogRecords;
+using EventStore.Common.Log;
 
 namespace EventStore.Data.CLI
 {
-    class Program
+    class Program 
     {
         static ChunkHeader ReadChunkHeader(string file)
         {
@@ -71,19 +72,25 @@ namespace EventStore.Data.CLI
 
         static void Main(string[] args)
         {
-            var file = ReadArg("--input", args);
+            LogManager.Init("data-cli", "", "");
+            string[] readArgs = args;
+            if (args.Length == 0) {
+                string readArgsInput = System.IO.File.ReadAllText("data-cli.args");
+                readArgs = readArgsInput.Split(new char[] { ' ' });
+            }
+            var file = ReadArg("--input", readArgs);
             if (file == "")
             {
                 Console.WriteLine("you must specify input file: --input");
                 Environment.Exit(1);
             }
-            var newFile = ReadArg("--output", args);
+            var newFile = ReadArg("--output", readArgs);
             if (newFile == "")
             {
                 Console.WriteLine("you must specify output file: --output");
                 Environment.Exit(1);
             }
-            var match = ReadArg("--match", args);
+            var match = ReadArg("--match", readArgs);
             if (match == "")
             {
                 Console.WriteLine("you must specify text to scrub: --match");

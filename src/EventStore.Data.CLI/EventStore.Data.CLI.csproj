@@ -54,9 +54,23 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\EventStore.Common\Log\log.config">
+      <Link>log.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\EventStore.Core\EventStore.Core.csproj">
       <Project>{d42a5833-4f20-4fcc-b364-6207ae016732}</Project>
       <Name>EventStore.Core</Name>
+    </ProjectReference>
+    <Reference Include="EventStore.Rags, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\EventStore.Rags.dll</HintPath>
+    </Reference>
+    <ProjectReference Include="..\EventStore.Common\EventStore.Common.csproj">
+      <Project>{B4C9BE3D-43B1-4049-A23A-5DC53DB3F0B0}</Project>
+      <Name>EventStore.Common</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
