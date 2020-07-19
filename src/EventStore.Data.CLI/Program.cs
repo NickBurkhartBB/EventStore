@@ -47,16 +47,25 @@ namespace EventStore.Data.CLI
             return chunkFooter;
         }
 
-        static byte[] EmptyJson(int size)
+        static byte[] EmptyJson(byte[] current)
         {
+            // if less then 2 bytes, just return as is
+            if (current.Length < 2) {
+                return current;
+            }
+            // otherwise build byte array of empty json, assuming utf 8
             List<char> emptyJson = new List<char>();
             emptyJson.Add('{');
-            for (int i = 0; i < size - 2; i++)
+            for (int i = 0; i < current.Length - 2; i++)
             {
                 emptyJson.Add(' ');
             }
             emptyJson.Add('}');
-            return Encoding.UTF8.GetBytes(emptyJson.ToArray());
+            var result = Encoding.UTF8.GetBytes(emptyJson.ToArray());
+            if (result.Length != current.Length) {
+                Console.WriteLine("empty json byte length mis-match {0} {1}", current.Length, result.Length);
+            }
+            return result;
         }
 
         static string ReadArg(string name, string[] args)
@@ -138,7 +147,7 @@ namespace EventStore.Data.CLI
                                     }
                                 }
                                 var newRecord = LogRecord.Prepare(prepare.LogPosition, prepare.CorrelationId, prepare.EventId, prepare.TransactionPosition, prepare.TransactionOffset,
-                                    prepare.EventStreamId, prepare.ExpectedVersion, prepare.Flags, prepare.EventType, EmptyJson(prepare.Data.Length), EmptyJson(prepare.Metadata.Length), prepare.TimeStamp);
+                                    prepare.EventStreamId, prepare.ExpectedVersion, prepare.Flags, prepare.EventType, EmptyJson(prepare.Data), EmptyJson(prepare.Metadata), prepare.TimeStamp);
                                 newChunk.TryAppend(newRecord);
                             }
                             else
